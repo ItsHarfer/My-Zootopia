@@ -23,11 +23,12 @@ def load_data(file_path: str, is_json: bool = False) -> str | dict:
     :return: Parsed JSON data as a dictionary if is_json is True,
              otherwise the file content as a string.
     """
-    with open(file_path, "r") as handle:
-        if is_json:
-            return json.load(handle)
-        else:
-            return handle.read()
+    try:
+        with open(file_path, "r") as handle:
+            return json.load(handle) if is_json else handle.read()
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error loading file {file_path}: {e}")
+        return "" if not is_json else {}
 
 
 def save_data(html: str) -> None:
@@ -41,6 +42,30 @@ def save_data(html: str) -> None:
         file.write(html)
 
 
+def serialize_animal(animal_obj):
+    name = animal_obj.get("name", "")
+    characteristics = animal_obj.get("characteristics", {})
+    diet = characteristics.get("diet", "")
+    animal_type = characteristics.get("type", "")
+    location = animal_obj.get("locations", [])[0] if animal_obj.get("locations") else ""
+
+    output = ""
+    output += f'<li class="cards__item">\n'
+    output += f'  <div class="card__title">{name}</div><br/>\n'
+    output += f'  <p class="card__text">\n'
+
+    if diet:
+        output += f"    <strong>Diet:</strong> {diet}<br/>\n"
+    if animal_type:
+        output += f"    <strong>Type:</strong> {animal_type}<br/>\n"
+    if location:
+        output += f"    <strong>Location:</strong> {location}<br/>\n"
+
+    output += f"  </p>\n"
+    output += f"</li>\n"
+    return output
+
+
 def replace_animals_info() -> str:
     """
     Replaces the animal information placeholder in the HTML template
@@ -48,44 +73,15 @@ def replace_animals_info() -> str:
 
     :return: HTML string with animal information inserted.
     """
+    output = ""
     html_without_animals = load_data(HTML_FILE)
     animals_data = load_data(JSON_FILE, True)
-    animal_list = get_animal_list(animals_data)
-    html_with_animals = html_without_animals.replace(
-        "__REPLACE_ANIMALS_INFO__", animal_list
-    )
+
+    for animal_obj in animals_data:
+        output += serialize_animal(animal_obj)
+
+    html_with_animals = html_without_animals.replace("__REPLACE_ANIMALS_INFO__", output)
     return html_with_animals
-
-
-def get_animal_list(
-    animal_list: list[dict[str, dict[str, str] | list[str] | str]],
-) -> str:
-    """
-    Creates a formatted string of animal information.
-
-    :param animal_list: List of dictionaries, each containing details about an animal.
-    :return: Formatted string with each animal's details.
-    """
-    output = ""
-    for animal in animal_list:
-        name = animal.get("name", "")
-        characteristics = animal.get("characteristics", {})
-        diet = characteristics.get("diet", "")
-        animal_type = characteristics.get("type", "")
-        location = animal.get("locations", [])[0] if animal.get("locations") else ""
-
-        if name:
-            output += f"Name: {name.capitalize()}\n"
-        if diet:
-            output += f"Diet: {diet.capitalize()}\n"
-        if animal_type:
-            output += f"Type: {animal_type.capitalize()}\n"
-        if location:
-            output += f"Location: {location.capitalize()}\n"
-
-        output += "\n"
-
-    return output
 
 
 def main() -> None:
