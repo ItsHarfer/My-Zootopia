@@ -42,6 +42,30 @@ def save_data(html: str) -> None:
         file.write(html)
 
 
+def serialize_animal(animal_obj):
+    name = animal_obj.get("name", "")
+    characteristics = animal_obj.get("characteristics", {})
+    diet = characteristics.get("diet", "")
+    animal_type = characteristics.get("type", "")
+    location = animal_obj.get("locations", [])[0] if animal_obj.get("locations") else ""
+
+    output = ""
+    output += f'<li class="cards__item">\n'
+    output += f'  <div class="card__title">{name}</div><br/>\n'
+    output += f'  <p class="card__text">\n'
+
+    if diet:
+        output += f"    <strong>Diet:</strong> {diet}<br/>\n"
+    if animal_type:
+        output += f"    <strong>Type:</strong> {animal_type}<br/>\n"
+    if location:
+        output += f"    <strong>Location:</strong> {location}<br/>\n"
+
+    output += f"  </p>\n"
+    output += f"</li>\n"
+    return output
+
+
 def replace_animals_info() -> str:
     """
     Replaces the animal information placeholder in the HTML template
@@ -49,47 +73,15 @@ def replace_animals_info() -> str:
 
     :return: HTML string with animal information inserted.
     """
+    output = ""
     html_without_animals = load_data(HTML_FILE)
     animals_data = load_data(JSON_FILE, True)
-    animal_list = format_animal_list_to_html(animals_data)
-    html_with_animals = html_without_animals.replace(
-        "__REPLACE_ANIMALS_INFO__", animal_list
-    )
+
+    for animal_obj in animals_data:
+        output += serialize_animal(animal_obj)
+
+    html_with_animals = html_without_animals.replace("__REPLACE_ANIMALS_INFO__", output)
     return html_with_animals
-
-
-def format_animal_list_to_html(
-    animals: list[dict[str, dict | list[str] | str]],
-) -> str:
-    """
-    Creates a formatted string of animal information.
-
-    :param animals: List of dictionaries, each containing details about an animal.
-    :return: Formatted string with each animal's details.
-    """
-    output = ""
-    for animal in animals:
-        name = animal.get("name", "")
-        characteristics = animal.get("characteristics", {})
-        diet = characteristics.get("diet", "")
-        animal_type = characteristics.get("type", "")
-        location = animal.get("locations", [])[0] if animal.get("locations") else ""
-
-        output += f'<li class="cards__item">\n'
-        output += f'  <div class="card__title">{name}</div><br/>\n'
-        output += f'  <p class="card__text">\n'
-
-        if diet:
-            output += f"    <strong>Diet:</strong> {diet}<br/>\n"
-        if animal_type:
-            output += f"    <strong>Type:</strong> {animal_type}<br/>\n"
-        if location:
-            output += f"    <strong>Location:</strong> {location}<br/>\n"
-
-        output += f"  </p>\n"
-        output += f"</li>\n"
-
-    return output
 
 
 def main() -> None:
