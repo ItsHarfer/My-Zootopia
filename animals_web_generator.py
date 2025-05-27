@@ -58,7 +58,7 @@ def replace_animals_info() -> str:
 
 
 def get_animal_list(
-    animal_list: list[dict[str, dict[str, str] | list[str] | str]],
+    animal_list: list[dict[str, dict | list[str] | str]],
 ) -> str:
     """
     Creates a formatted string of animal information.
@@ -74,16 +74,16 @@ def get_animal_list(
         animal_type = characteristics.get("type", "")
         location = animal.get("locations", [])[0] if animal.get("locations") else ""
 
+        output += '<li class="cards__item">'
         if name:
-            output += f"Name: {name.capitalize()}\n"
+            output += f"Name: {name}<br/>"
         if diet:
-            output += f"Diet: {diet.capitalize()}\n"
+            output += f"Diet: {diet}<br/>"
         if animal_type:
-            output += f"Type: {animal_type.capitalize()}\n"
+            output += f"Type: {animal_type}<br/>"
         if location:
-            output += f"Location: {location.capitalize()}\n"
-
-        output += "\n"
+            output += f"Location: {location}<br/>"
+        output += "</li>"
 
     return output
 
