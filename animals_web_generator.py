@@ -23,11 +23,12 @@ def load_data(file_path: str, is_json: bool = False) -> str | dict:
     :return: Parsed JSON data as a dictionary if is_json is True,
              otherwise the file content as a string.
     """
-    with open(file_path, "r") as handle:
-        if is_json:
-            return json.load(handle)
-        else:
-            return handle.read()
+    try:
+        with open(file_path, "r") as handle:
+            return json.load(handle) if is_json else handle.read()
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error loading file {file_path}: {e}")
+        return "" if not is_json else {}
 
 
 def save_data(html: str) -> None:
@@ -50,40 +51,43 @@ def replace_animals_info() -> str:
     """
     html_without_animals = load_data(HTML_FILE)
     animals_data = load_data(JSON_FILE, True)
-    animal_list = get_animal_list(animals_data)
+    animal_list = format_animal_list_to_html(animals_data)
     html_with_animals = html_without_animals.replace(
         "__REPLACE_ANIMALS_INFO__", animal_list
     )
     return html_with_animals
 
 
-def get_animal_list(
-    animal_list: list[dict[str, dict | list[str] | str]],
+def format_animal_list_to_html(
+    animals: list[dict[str, dict | list[str] | str]],
 ) -> str:
     """
     Creates a formatted string of animal information.
 
-    :param animal_list: List of dictionaries, each containing details about an animal.
+    :param animals: List of dictionaries, each containing details about an animal.
     :return: Formatted string with each animal's details.
     """
     output = ""
-    for animal in animal_list:
+    for animal in animals:
         name = animal.get("name", "")
         characteristics = animal.get("characteristics", {})
         diet = characteristics.get("diet", "")
         animal_type = characteristics.get("type", "")
         location = animal.get("locations", [])[0] if animal.get("locations") else ""
 
-        output += '<li class="cards__item">'
-        if name:
-            output += f"Name: {name}<br/>"
+        output += f'<li class="cards__item">\n'
+        output += f'  <div class="card__title">{name}</div><br/>\n'
+        output += f'  <p class="card__text">\n'
+
         if diet:
-            output += f"Diet: {diet}<br/>"
+            output += f"    <strong>Diet:</strong> {diet}<br/>\n"
         if animal_type:
-            output += f"Type: {animal_type}<br/>"
+            output += f"    <strong>Type:</strong> {animal_type}<br/>\n"
         if location:
-            output += f"Location: {location}<br/>"
-        output += "</li>"
+            output += f"    <strong>Location:</strong> {location}<br/>\n"
+
+        output += f"  </p>\n"
+        output += f"</li>\n"
 
     return output
 
