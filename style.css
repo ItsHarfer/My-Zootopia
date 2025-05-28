@@ -12,8 +12,10 @@ html {
 h1 {
     text-align: center;
     font-size: 40pt;
-    font-weight: normal;
+    font-weight: bold;
 }
+
+
 
 body {
     font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -45,7 +47,7 @@ body {
     background-image: url("media/fox.png");
     background-repeat: no-repeat;
     background-position: right 2.2rem top 2.2rem;
-    background-size: 80px 80px;
+    background-size: 50px 50px;
     background-color: var(--secondary-color);
 
     border-radius: 0.25rem;
@@ -61,10 +63,9 @@ body {
     color: var(--font-color);
     font-size: 1.25rem;
     font-weight: 300;
-    font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     letter-spacing: 2px;
     text-transform: uppercase;
-    padding-left: 0.5rem;
+    padding: 0 0 1rem 0;
 }
 
 .card__subtitle {
@@ -86,4 +87,14 @@ body {
     border-radius: 0.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     max-width: 80ch;
+    margin-top: 2rem;
+}
+
+.card__text ul {
+    padding-left: 0;
+}
+
+.card__text ul li {
+    list-style: none;
+    line-height: 1.4;
 }
