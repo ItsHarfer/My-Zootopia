@@ -49,6 +49,17 @@ def save_data(file_path: str, html: str, is_json: bool = False) -> None:
         return print(f"Error saving file {file_path}: {e}")
 
 
+def indented_line(line: str, level: int = 0) -> str:
+    """
+    Returns a formatted HTML line with indentation.
+
+    :param line: The HTML line to format.
+    :param level: The indentation level (each level adds two spaces). Defaults to 0.
+    :return: A string with the line prefixed by the appropriate number of spaces and a newline character.
+    """
+    return "  " * level + line + "\n"
+
+
 def format_characteristics(characteristics: dict, location: str) -> str:
     """
     Formats the characteristics and location of an animal into an HTML string.
@@ -64,18 +75,24 @@ def format_characteristics(characteristics: dict, location: str) -> str:
     avg_litter_size = characteristics.get("average_litter_size", "")
     lifespan = characteristics.get("lifespan", "")
 
+    output += indented_line("<ul>", 2)
     if diet:
-        output += f"    <strong>Diet:</strong> {diet}<br/>\n"
+        output += indented_line(f"<li><strong>Diet:</strong> {diet}</li>", 3)
     if animal_type:
-        output += f"    <strong>Type:</strong> {animal_type}<br/>\n"
+        output += indented_line(f"<li><strong>Type:</strong> {animal_type}</li>", 3)
     if location:
-        output += f"    <strong>Location:</strong> {location}<br/>\n"
+        output += indented_line(f"<li><strong>Location:</strong> {location}</li>", 3)
     if temperament:
-        output += f"    <strong>Temperament:</strong> {temperament}<br/>\n"
+        output += indented_line(
+            f"<li><strong>Temperament:</strong> {temperament}</li>", 3
+        )
     if avg_litter_size:
-        output += f"    <strong>Average Litter Size:</strong> {avg_litter_size}<br/>\n"
+        output += indented_line(
+            f"<li><strong>Average Litter Size:</strong> {avg_litter_size}</li>", 3
+        )
     if lifespan:
-        output += f"    <strong>Lifespan:</strong> {lifespan}<br/>\n"
+        output += indented_line(f"<li><strong>Lifespan:</strong> {lifespan}</li>", 3)
+    output += indented_line("</ul>", 2)
 
     return output
 
@@ -91,10 +108,10 @@ def generate_animal_card(name: str, subtitle: str, body_html: str) -> str:
     """
     output = ""
     output += f'<li class="cards__item">\n'
-    output += f'  <div class="card__title">{name}</div><br/>\n'
+    output += f'  <div class="card__title">{name}</div>\n'
     if subtitle:
-        output += f'  <div class="card__subtitle"><em>{subtitle}</em></div><br/>\n'
-    output += f'  <p class="card__text">\n{body_html}  </p>\n'
+        output += f'  <div class="card__subtitle"><em>{subtitle}</em></div>\n'
+    output += f'  <div class="card__text">\n{body_html}</div>\n'
     output += f"</li>\n"
     return output
 
