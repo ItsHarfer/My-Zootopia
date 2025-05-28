@@ -7,11 +7,12 @@ HTML template with the generated content, and writes the final HTML to a new fil
 """
 
 import json
-
+from typing import Any
 
 HTML_FILE = "animals_template.html"
 JSON_FILE = "animals_data.json"
 ANIMAL_HTML_FILE = "animals.html"
+PLACEHOLDER = "__REPLACE_ANIMALS_INFO__"
 
 
 def load_data(file_path: str, is_json: bool = False) -> str | dict:
@@ -19,40 +20,49 @@ def load_data(file_path: str, is_json: bool = False) -> str | dict:
     Reads data from the specified file path.
 
     :param file_path: Path to the file to read.
-    :param is_json: Boolean indicating if the file should be parsed as JSON.
+    :param is_json: Whether to parse the file as JSON. Defaults to False.
     :return: Parsed JSON data as a dictionary if is_json is True,
              otherwise the file content as a string.
     """
     try:
-        with open(file_path, "r") as handle:
-            return json.load(handle) if is_json else handle.read()
-    except (FileNotFoundError, json.JSONDecodeError) as e:
+        with open(file_path, "r") as file:
+            return json.load(file) if is_json else file.read()
+    except (IOError, FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Error loading file {file_path}: {e}")
         return "" if not is_json else {}
 
 
-def save_data(html: str) -> None:
+def save_data(file_path: str, html: str, is_json: bool = False) -> None:
     """
-    Saves the provided HTML content to the output file.
+    Saves data to the specified file path.
 
-    :param html: HTML content to be saved.
+    :param file_path: Path to the file to save.
+    :param html: Content to write to the file.
+    :param is_json: Whether to save the content as JSON. Defaults to False.
     :return: None
     """
-    with open(ANIMAL_HTML_FILE, "w") as file:
-        file.write(html)
+    try:
+        with open(file_path, "w") as file:
+            file.write(json.dumps(html)) if is_json else file.write(html)
+            return print("HTML saved successfully.")
+    except (IOError, FileNotFoundError, json.JSONDecodeError) as e:
+        return print(f"Error saving file {file_path}: {e}")
 
 
-def serialize_animal(animal_obj):
-    name = animal_obj.get("name", "")
-    characteristics = animal_obj.get("characteristics", {})
+def format_characteristics(characteristics: dict, location: str) -> str:
+    """
+    Formats the characteristics and location of an animal into an HTML string.
+
+    :param characteristics: Dictionary containing animal characteristics such as diet, type, temperament, etc.
+    :param location: Location string of the animal.
+    :return: Formatted HTML string representing the animal's characteristics.
+    """
+    output = ""
     diet = characteristics.get("diet", "")
     animal_type = characteristics.get("type", "")
-    location = animal_obj.get("locations", [])[0] if animal_obj.get("locations") else ""
-
-    output = ""
-    output += f'<li class="cards__item">\n'
-    output += f'  <div class="card__title">{name}</div><br/>\n'
-    output += f'  <p class="card__text">\n'
+    temperament = characteristics.get("temperament", "")
+    avg_litter_size = characteristics.get("average_litter_size", "")
+    lifespan = characteristics.get("lifespan", "")
 
     if diet:
         output += f"    <strong>Diet:</strong> {diet}<br/>\n"
@@ -60,10 +70,48 @@ def serialize_animal(animal_obj):
         output += f"    <strong>Type:</strong> {animal_type}<br/>\n"
     if location:
         output += f"    <strong>Location:</strong> {location}<br/>\n"
+    if temperament:
+        output += f"    <strong>Temperament:</strong> {temperament}<br/>\n"
+    if avg_litter_size:
+        output += f"    <strong>Average Litter Size:</strong> {avg_litter_size}<br/>\n"
+    if lifespan:
+        output += f"    <strong>Lifespan:</strong> {lifespan}<br/>\n"
 
-    output += f"  </p>\n"
+    return output
+
+
+def generate_animal_card(name: str, subtitle: str, body_html: str) -> str:
+    """
+    Generates an HTML card for an animal with its name, subtitle, and detailed body content.
+
+    :param name: The name of the animal.
+    :param subtitle: A subtitle or scientific name of the animal.
+    :param body_html: HTML formatted string containing detailed animal information.
+    :return: An HTML string representing the animal card.
+    """
+    output = ""
+    output += f'<li class="cards__item">\n'
+    output += f'  <div class="card__title">{name}</div><br/>\n'
+    if subtitle:
+        output += f'  <div class="card__subtitle"><em>{subtitle}</em></div><br/>\n'
+    output += f'  <p class="card__text">\n{body_html}  </p>\n'
     output += f"</li>\n"
     return output
+
+
+def serialize_animal(animal_obj: dict) -> str:
+    """
+    Serializes an animal object dictionary into an HTML card string.
+
+    :param animal_obj: Dictionary representing an animal with keys like 'name', 'characteristics', 'locations', and 'taxonomy'.
+    :return: An HTML string representing the serialized animal card.
+    """
+    name = animal_obj.get("name", "")
+    characteristics = animal_obj.get("characteristics", {})
+    location = animal_obj.get("locations", [])[0] if animal_obj.get("locations") else ""
+    scientific_name = animal_obj.get("taxonomy", {}).get("scientific_name", "")
+    body_html = format_characteristics(characteristics, location)
+    return generate_animal_card(name, scientific_name, body_html)
 
 
 def replace_animals_info() -> str:
@@ -80,7 +128,7 @@ def replace_animals_info() -> str:
     for animal_obj in animals_data:
         output += serialize_animal(animal_obj)
 
-    html_with_animals = html_without_animals.replace("__REPLACE_ANIMALS_INFO__", output)
+    html_with_animals = html_without_animals.replace(PLACEHOLDER, output)
     return html_with_animals
 
 
@@ -91,7 +139,7 @@ def main() -> None:
     :return: None
     """
     animal_html = replace_animals_info()
-    save_data(animal_html)
+    save_data(ANIMAL_HTML_FILE, animal_html)
 
 
 if __name__ == "__main__":
