@@ -1,0 +1,89 @@
+
+:root {
+    --promary-color: #ffe9e9;
+    --secondary-color: #fffaf0;
+    --font-color: #696969;
+}
+
+html {
+    background-color: var(--promary-color);
+}
+
+h1 {
+    text-align: center;
+    font-size: 40pt;
+    font-weight: normal;
+}
+
+body {
+    font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: 0;
+    padding: 1rem;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -moz-font-feature-settings: "liga" on;
+    width: 900px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+
+}
+
+.cards {
+    list-style: none;
+    border-radius: 0.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.cards__item {
+    background-image: url("media/fox.png");
+    background-repeat: no-repeat;
+    background-position: right 2.2rem top 2.2rem;
+    background-size: 80px 80px;
+    background-color: var(--secondary-color);
+
+    border-radius: 0.25rem;
+    box-shadow: 0 20px 40px -14px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    padding: 2.2rem 2rem 2rem 2rem;
+    width: 100%;
+    margin: 0.5rem;
+
+}
+
+.card__title {
+    color: var(--font-color);
+    font-size: 1.25rem;
+    font-weight: 300;
+    font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding-left: 0.5rem;
+}
+
+.card__subtitle {
+    font-size: 0.95rem;
+    color: #666;
+    font-style: italic;
+    padding-left: 0.5rem;
+    margin-top: -0.75rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.card__text {
+    flex: 1 1 auto;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    background-color: rgba(255, 255, 255, 0.6);
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    max-width: 80ch;
+}
