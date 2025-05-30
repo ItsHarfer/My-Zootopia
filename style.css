@@ -15,7 +15,10 @@ h1 {
     font-weight: bold;
 }
 
-
+h2 {
+    font-weight: lighter;
+    margin: 35px 0 0 20px;
+}
 
 body {
     font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
