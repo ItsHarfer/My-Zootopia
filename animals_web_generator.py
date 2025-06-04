@@ -16,7 +16,7 @@ Features:
 
 import json
 
-import requests
+import data_fetcher
 
 from config import (
     PLACEHOLDER,
@@ -27,47 +27,6 @@ from config import (
     API_NINJA_KEY,
     API_NINJA_URL,
 )
-
-
-def load_remote_data(url: str, endpoint_name: str = "", query: str = "") -> list[dict]:
-    """
-    Sends a GET request to the specified API endpoint with an optional query.
-    Returns the JSON response as a list of animal dictionaries.
-
-    :param url: Base URL of the API.
-    :param endpoint_name: Query parameter name (e.g., 'name').
-    :param query: Query value (e.g., 'Fox').
-    :return: List of animal data dictionaries.
-    """
-    try:
-        response = requests.get(
-            f"{url}?{endpoint_name}={query}",
-            headers={"X-Api-Key": API_NINJA_KEY},
-        )
-        response.raise_for_status()
-        response_data = response.json()
-        return response_data
-
-    except requests.RequestException as e:
-        print(f"Failed to fetch data from API: {e}")
-        return []
-
-
-def load_local_data(file_path: str, is_json: bool = False) -> str | dict:
-    """
-    Reads data from the specified file path.
-
-    :param file_path: Path to the file to read.
-    :param is_json: Whether to parse the file as JSON. Defaults to False.
-    :return: Parsed JSON data as a dictionary if is_json is True,
-             otherwise the file content as a string.
-    """
-    try:
-        with open(file_path, "r") as file:
-            return json.load(file) if is_json else file.read()
-    except (IOError, FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Error loading file {file_path}: {e}")
-        return "" if not is_json else {}
 
 
 def group_by_attribute(
@@ -265,7 +224,7 @@ def generate_html_by_filtered_attribute(
     """
     output = f"""
   <li class="card__result">
-    <h2>You searched for: <em>{animal_choice}</em></h2>
+    <h2>You searched for: <em>{animal_choice.capitalize()}</em></h2>
     <p>Filtered by skin type: <strong>{skin_type}</strong></p>
   </li>
   """
@@ -298,7 +257,7 @@ def get_filtered_animals_html() -> str | None:
     """
     while True:
         animal_choice = get_user_choice("Enter a name of an animal: ")
-        animals = load_remote_data(API_NINJA_URL, "name", animal_choice)
+        animals = data_fetcher.fetch_data("name", animal_choice)
 
         if not animals:
             print(f"No data found for {animal_choice}")
@@ -326,7 +285,7 @@ def render_and_save_html(animal_html: str) -> None:
     :param animal_html: HTML string with the filtered animal cards to be inserted.
     :return: None
     """
-    html_template = load_local_data(HTML_FILE)
+    html_template = data_fetcher.fetch_local_data(HTML_FILE)
     final_html = replace_placeholder_with_html_content(html_template, animal_html)
     save_data(ANIMAL_HTML_FILE, final_html)
 
