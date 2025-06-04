@@ -8,6 +8,8 @@ HTML template with the generated content, and writes the final HTML to a new fil
 
 import json
 
+import requests
+
 from config import (
     PLACEHOLDER,
     JSON_FILE,
@@ -15,10 +17,18 @@ from config import (
     SUB_ATTRIBUTE,
     HTML_FILE,
     ANIMAL_HTML_FILE,
+    API_NINJA_KEY,
+    API_NINJA_URL,
 )
 
 
-def load_data(file_path: str, is_json: bool = False) -> str | dict:
+def load_remote_data(url: str, endpoint_name: str = "", query: str = ""):
+    return requests.get(
+        url + f"?{endpoint_name}={query}", headers={"X-Api-Key": API_NINJA_KEY}
+    ).json()
+
+
+def load_local_data(file_path: str, is_json: bool = False) -> str | dict:
     """
     Reads data from the specified file path.
 
@@ -36,7 +46,7 @@ def load_data(file_path: str, is_json: bool = False) -> str | dict:
 
 
 def group_by_attribute(
-    animals: dict, attribute: str, sub_attribute: str = ""
+    animals: list, attribute: str, sub_attribute: str = ""
 ) -> dict[str, list[dict]]:
     """
     Groups a list of animals by a specified attribute, optionally using a sub-attribute.
@@ -214,9 +224,11 @@ def get_filtered_animals_html() -> str:
 
     :return: HTML string containing cards for animals of the selected skin type.
     """
-    animals = load_data(JSON_FILE, is_json=True)
-    grouped = group_by_attribute(animals, ATTRIBUTE, SUB_ATTRIBUTE)
+    animal_choice = "Fox"
+    animals = load_remote_data(API_NINJA_URL, "name", animal_choice)
+    grouped = group_by_attribute(list(animals), ATTRIBUTE, SUB_ATTRIBUTE)
     skin_type = get_user_choice_with_answers(list(grouped.keys()))
+
     return generate_html_by_filtered_attribute(grouped[skin_type], skin_type)
 
 
@@ -228,7 +240,7 @@ def render_and_save_html(animal_html: str) -> None:
     :param animal_html: HTML string with the filtered animal cards to be inserted.
     :return: None
     """
-    html_template = load_data(HTML_FILE)
+    html_template = load_local_data(HTML_FILE)
     final_html = replace_placeholder_with_html_content(html_template, animal_html)
     save_data(ANIMAL_HTML_FILE, final_html)
 
