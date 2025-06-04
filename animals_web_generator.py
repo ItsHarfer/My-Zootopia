@@ -1,9 +1,17 @@
 """
 animals_web_generator.py
 
-This script reads animal data from a JSON file and a template HTML file,
-generates a list of formatted animal details, replaces a placeholder in the
-HTML template with the generated content, and writes the final HTML to a new file.
+This script allows users to search for animal data using the API Ninjas Animal API.
+It supports filtering by skin type, generating structured HTML content based on the
+retrieved animal data, and rendering it into a static website using a predefined HTML template.
+
+Features:
+- Fetches animal data from a remote API.
+- Supports filtering results by a specific attribute (e.g., skin type).
+- Handles user input interactively and validates choices.
+- Displays a styled message when no matching animal is found.
+- Outputs formatted animal information in a card-based HTML layout.
+- Saves the final rendered HTML page to a local file.
 """
 
 import json
@@ -12,7 +20,6 @@ import requests
 
 from config import (
     PLACEHOLDER,
-    JSON_FILE,
     ATTRIBUTE,
     SUB_ATTRIBUTE,
     HTML_FILE,
@@ -39,9 +46,8 @@ def load_remote_data(url: str, endpoint_name: str = "", query: str = "") -> list
         )
         response.raise_for_status()
         response_data = response.json()
-        if not response_data:
-            print("No animals found. Please try again.")
         return response_data
+
     except requests.RequestException as e:
         print(f"Failed to fetch data from API: {e}")
         return []
@@ -245,22 +251,45 @@ def get_user_choice_with_answers(skin_types: list[str]) -> str:
         print("Invalid choice. Please select one from the list above.")
 
 
-def generate_html_by_filtered_attribute(animal_data: list[dict], skin_type: str) -> str:
+def generate_html_by_filtered_attribute(
+    animal_choice: str, animal_data: list[dict], skin_type: str
+) -> str:
     """
-    Generates the HTML for a list of animals filtered by a specific skin type.
+    Generates a formatted HTML block for a list of animals filtered by a specific skin type.
+    Includes a heading that reflects the user's search criteria.
 
-    :param animal_data: A list of animal dictionaries to display.
+    :param animal_choice: The name of the animal entered by the user.
+    :param animal_data: A list of animal dictionaries matching the filter.
     :param skin_type: The skin type used to filter animals.
-    :return: HTML string containing the formatted animal cards.
+    :return: A complete HTML string containing the filtered result cards.
     """
-    output = ""
-    output += f"<h2>Filtered by: {skin_type}</h2>"
+    output = f"""
+  <li class="card__result">
+    <h2>You searched for: <em>{animal_choice}</em></h2>
+    <p>Filtered by skin type: <strong>{skin_type}</strong></p>
+  </li>
+  """
     for animal in animal_data:
         output += serialize_animal(animal)
     return output
 
 
-def get_filtered_animals_html() -> str:
+def generate_html_error_message(query: str) -> str:
+    """
+    Generates a styled HTML error message when no animal matches the user's input.
+
+    :param query: The animal name entered by the user.
+    :return: A formatted HTML block with an error message.
+    """
+    return f"""
+  <li class="card__error">
+    <h2>Oops! We couldn't find the animal "<em>{query}</em>".</h2>
+    <p>Please try another name or check your spelling.</p>
+  </li>
+  """
+
+
+def get_filtered_animals_html() -> str | None:
     """
     Loads animal data, groups it by a given attribute, asks the user to choose a skin type,
     and returns the HTML string for the animals matching that skin type.
@@ -272,7 +301,8 @@ def get_filtered_animals_html() -> str:
         animals = load_remote_data(API_NINJA_URL, "name", animal_choice)
 
         if not animals:
-            continue
+            print(f"No data found for {animal_choice}")
+            return generate_html_error_message(animal_choice)
 
         grouped = group_by_attribute(animals, ATTRIBUTE, SUB_ATTRIBUTE)
         if not grouped:
@@ -281,7 +311,9 @@ def get_filtered_animals_html() -> str:
 
         skin_type = get_user_choice_with_answers(list(grouped.keys()))
         if skin_type and skin_type in grouped:
-            return generate_html_by_filtered_attribute(grouped[skin_type], skin_type)
+            return generate_html_by_filtered_attribute(
+                animal_choice, grouped[skin_type], skin_type
+            )
 
         print("Invalid skin type selected.")
 
