@@ -1,9 +1,17 @@
 """
 animals_web_generator.py
 
-This script reads animal data from a JSON file and a template HTML file,
-generates a list of formatted animal details, replaces a placeholder in the
-HTML template with the generated content, and writes the final HTML to a new file.
+This script allows users to search for animal data using the API Ninjas Animal API.
+It supports filtering by skin type, generating structured HTML content based on the
+retrieved animal data, and rendering it into a static website using a predefined HTML template.
+
+Features:
+- Fetches animal data from a remote API.
+- Supports filtering results by a specific attribute (e.g., skin type).
+- Handles user input interactively and validates choices.
+- Displays a styled message when no matching animal is found.
+- Outputs formatted animal information in a card-based HTML layout.
+- Saves the final rendered HTML page to a local file.
 """
 
 import json
@@ -12,7 +20,6 @@ import requests
 
 from config import (
     PLACEHOLDER,
-    JSON_FILE,
     ATTRIBUTE,
     SUB_ATTRIBUTE,
     HTML_FILE,
@@ -257,10 +264,10 @@ def generate_html_by_filtered_attribute(
     :return: A complete HTML string containing the filtered result cards.
     """
     output = f"""
-  <div class="card__result">
+  <li class="card__result">
     <h2>You searched for: <em>{animal_choice}</em></h2>
     <p>Filtered by skin type: <strong>{skin_type}</strong></p>
-  </div>
+  </li>
   """
     for animal in animal_data:
         output += serialize_animal(animal)
@@ -268,11 +275,17 @@ def generate_html_by_filtered_attribute(
 
 
 def generate_html_error_message(query: str) -> str:
+    """
+    Generates a styled HTML error message when no animal matches the user's input.
+
+    :param query: The animal name entered by the user.
+    :return: A formatted HTML block with an error message.
+    """
     return f"""
-  <div class="card__error">
+  <li class="card__error">
     <h2>Oops! We couldn't find the animal "<em>{query}</em>".</h2>
     <p>Please try another name or check your spelling.</p>
-  </div>
+  </li>
   """
 
 
