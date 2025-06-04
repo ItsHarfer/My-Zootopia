@@ -15,17 +15,29 @@ Features:
 """
 
 import json
+import os
 
 import data_fetcher
+from dotenv import load_dotenv
 
-from config import (
+# Loading the API from the .env-file
+load_dotenv()
+(
+    API_NINJA_KEY,
+    API_NINJA_URL,
     PLACEHOLDER,
-    ATTRIBUTE,
     SUB_ATTRIBUTE,
     HTML_FILE,
     ANIMAL_HTML_FILE,
-    API_NINJA_KEY,
-    API_NINJA_URL,
+    ATTRIBUTE,
+) = (
+    os.getenv("API_NINJA_KEY"),
+    os.getenv("API_NINJA_URL"),
+    os.getenv("PLACEHOLDER"),
+    os.getenv("SUB_ATTRIBUTE"),
+    os.getenv("HTML_FILE"),
+    os.getenv("ANIMAL_HTML_FILE"),
+    os.getenv("ATTRIBUTE"),
 )
 
 

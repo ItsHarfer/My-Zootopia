@@ -20,10 +20,16 @@ Example output format:
 """
 
 import json
+import os
 
 import requests
 
-from config import API_NINJA_KEY, API_NINJA_URL
+from dotenv import load_dotenv
+
+# Loading the API from the .env-file
+load_dotenv()
+API_NINJA_KEY = os.getenv("API_NINJA_KEY")
+API_NINJA_URL = os.getenv("API_NINJA_URL")
 
 
 def fetch_data(endpoint_name: str, animal_name: str) -> list[dict]:
