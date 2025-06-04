@@ -22,10 +22,29 @@ from config import (
 )
 
 
-def load_remote_data(url: str, endpoint_name: str = "", query: str = ""):
-    return requests.get(
-        url + f"?{endpoint_name}={query}", headers={"X-Api-Key": API_NINJA_KEY}
-    ).json()
+def load_remote_data(url: str, endpoint_name: str = "", query: str = "") -> list[dict]:
+    """
+    Sends a GET request to the specified API endpoint with an optional query.
+    Returns the JSON response as a list of animal dictionaries.
+
+    :param url: Base URL of the API.
+    :param endpoint_name: Query parameter name (e.g., 'name').
+    :param query: Query value (e.g., 'Fox').
+    :return: List of animal data dictionaries.
+    """
+    try:
+        response = requests.get(
+            f"{url}?{endpoint_name}={query}",
+            headers={"X-Api-Key": API_NINJA_KEY},
+        )
+        response.raise_for_status()
+        response_data = response.json()
+        if not response_data:
+            print("No animals found. Please try again.")
+        return response_data
+    except requests.RequestException as e:
+        print(f"Failed to fetch data from API: {e}")
+        return []
 
 
 def load_local_data(file_path: str, is_json: bool = False) -> str | dict:
@@ -183,6 +202,26 @@ def replace_placeholder_with_html_content(html: str, output: str) -> str:
     return html.replace(PLACEHOLDER, output)
 
 
+def get_user_choice(prompt: str) -> str | None:
+    """
+    Prompts the user to enter a non-empty string input.
+
+    :param prompt: The prompt message displayed to the user.
+    :return: The user's input converted to lowercase, if not empty.
+    """
+    while True:
+        try:
+            user_choice = input(prompt).strip().lower()
+            if user_choice:
+                return user_choice
+            else:
+                print("Choice cannot be empty. Please type in an animal name.")
+                continue
+
+        except ValueError as e:
+            print("Error: ", e)
+
+
 def get_user_choice_with_answers(skin_types: list[str]) -> str:
     """
     Prompts the user to select a skin type from a list of options.
@@ -190,6 +229,10 @@ def get_user_choice_with_answers(skin_types: list[str]) -> str:
     :param skin_types: A list of available skin types.
     :return: The skin type selected by the user.
     """
+    if not skin_types:
+        print("No skin types found.")
+        return ""
+
     skin_types = sorted(skin_types)
     print("** Available skin types **")
     for skin in skin_types:
@@ -224,12 +267,23 @@ def get_filtered_animals_html() -> str:
 
     :return: HTML string containing cards for animals of the selected skin type.
     """
-    animal_choice = "Fox"
-    animals = load_remote_data(API_NINJA_URL, "name", animal_choice)
-    grouped = group_by_attribute(list(animals), ATTRIBUTE, SUB_ATTRIBUTE)
-    skin_type = get_user_choice_with_answers(list(grouped.keys()))
+    while True:
+        animal_choice = get_user_choice("Enter a name of an animal: ")
+        animals = load_remote_data(API_NINJA_URL, "name", animal_choice)
 
-    return generate_html_by_filtered_attribute(grouped[skin_type], skin_type)
+        if not animals:
+            continue
+
+        grouped = group_by_attribute(animals, ATTRIBUTE, SUB_ATTRIBUTE)
+        if not grouped:
+            print("No valid skin types found for this animal.")
+            continue
+
+        skin_type = get_user_choice_with_answers(list(grouped.keys()))
+        if skin_type and skin_type in grouped:
+            return generate_html_by_filtered_attribute(grouped[skin_type], skin_type)
+
+        print("Invalid skin type selected.")
 
 
 def render_and_save_html(animal_html: str) -> None:
